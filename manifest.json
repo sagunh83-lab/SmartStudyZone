@@ -1,13 +1,22 @@
 {
   "name": "Smart Study Zone",
-  "short_name": "SmartStudy",
-  "start_url": "/index.html",
+  "short_name": "Study Zone",
+  "description": "Smart Study Zone एक learning app है जिसमें AI, YouTube, Instagram, Facebook, Twitter, LinkedIn, WhatsApp और Telegram courses को आसान भाषा में सीख सकते हैं।",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f7f9fc",
   "theme_color": "#1f6feb",
-  "lang": "hi",
+  "orientation": "portrait",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
