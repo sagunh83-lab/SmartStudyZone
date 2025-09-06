@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Smart Study Zone</title>
+  <style>
+    :root{--accent:#1f6feb;--bg:#f7f9fc;--card:#fff;--muted:#556074}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter, Arial, sans-serif;background:var(--bg);color:#0b1a2b;padding:18px}
+    .app{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;gap:12px}
+    .logo{font-weight:800;font-size:20px;color:var(--accent)}
+    .logo small{font-weight:600;color:var(--muted);font-size:12px}
+    .search{margin-top:14px;display:flex;gap:8px}
+    .search input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(11,26,43,0.08)}
+    .search button{padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:18px}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(11,26,43,0.06);cursor:pointer}
+    .card h3{margin:0 0 6px 0;font-size:16px}
+    .card p{margin:0;font-size:13px;color:var(--muted)}
+    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+    @media (max-width:600px){body{padding:12px}.grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">Smart Study <small>zone</small></div>
+    </header>
+
+    <div class="search" role="search" aria-label="Search courses">
+      <input id="q" placeholder="Search courses (e.g., AI, YouTube, Instagram)"/>
+      <button id="sbtn">Search</button>
+    </div>
+
+    <div class="grid" id="grid">
+      <div class="card" onclick="openCourse('ai')">
+        <h3>Learn AI</h3>
+        <p>AI का पूरा course — basics से applications तक।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('youtube')">
+        <h3>YouTube</h3>
+        <p>Channel setup, content strategy, SEO और monetization।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('instagram')">
+        <h3>Instagram</h3>
+        <p>Reels, feed strategy, growth और collaborations।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('facebook')">
+        <h3>Facebook</h3>
+        <p>Pages, groups, ads और community building।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('twitter')">
+        <h3>Twitter (X)</h3>
+        <p>Microcontent strategy, threads और audience engagement।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('linkedin')">
+        <h3>LinkedIn</h3>
+        <p>Professional branding, networking और B2B tactics।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('whatsapp')">
+        <h3>WhatsApp</h3>
+        <p>Business tools, groups, broadcast और customer support।</p>
+      </div>
+
+      <div class="card" onclick="openCourse('telegram')">
+        <h3>Telegram</h3>
+        <p>Channels, bots, automation और community growth।</p>
+      </div>
+    </div>
+
+    <footer>© Smart Study Zone — Offline study app. Built for Appgeyser/HTML WebView.</footer>
+  </div>
+
+  <script>
+    // Search (simple)
+    document.getElementById('sbtn').onclick = () => {
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      if(!q){ alert('Search term daalen'); return; }
+      const mapping = {ai:'Learn AI', youtube:'YouTube', instagram:'Instagram', facebook:'Facebook', twitter:'Twitter', linkedin:'LinkedIn', whatsapp:'WhatsApp', telegram:'Telegram'};
+      for(const key in mapping){
+        if(mapping[key].toLowerCase().includes(q) || key.includes(q)){ openCourse(key); return; }
+      }
+      alert('Koi course nahi mila: ' + q);
+    };
+
+    function openCourse(id){
+      // open course.html with query param
+      location.href = 'course.html?course=' + encodeURIComponent(id);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Course Viewer - Smart Study Zone</title>
+  <style>
+    :root{--accent:#1f6feb;--bg:#f7f9fc;--card:#fff;--muted:#556074}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter, Arial, sans-serif;background:var(--bg);color:#0b1a2b;padding:14px}
+    header{display:flex;align-items:center;gap:12px;background:var(--card);padding:10px;border-radius:10px;box-shadow:0 6px 20px rgba(11,26,43,0.06)}
+    .title{font-weight:700;font-size:16px;flex:1}
+    .btn{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .container{max-width:960px;margin:16px auto}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 20px rgba(11,26,43,0.06);min-height:320px}
+    .lesson-title{font-weight:700;margin:0 0 8px 0}
+    .lesson-body{color:#163248;line-height:1.6}
+    .meta{margin-top:12px;display:flex;justify-content:space-between;gap:8px}
+    .nav{display:flex;gap:8px}
+    .nav button{padding:10px 14px;border-radius:8px;border:0;cursor:pointer}
+    .prev{background:#e6eefc;color:#0b2945}
+    .next{background:var(--accent);color:#fff}
+    .progress{height:8px;background:#e6eefc;border-radius:8px;overflow:hidden;margin-top:12px}
+    .progress > div{height:100%;background:linear-gradient(90deg,var(--accent),#0a8bd8);width:0%}
+    .note{margin-top:10px;padding:10px;border-left:4px solid #ffe39f;background:#fff8e6}
+    @media (max-width:700px){body{padding:10px}.card{padding:14px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title" id="courseTitle">Course</div>
+    <button class="btn" onclick="goHome()">Home</button>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h3 id="lessonTitle" class="lesson-title">Lesson</h3>
+      <div id="lessonBody" class="lesson-body"></div>
+
+      <div class="meta">
+        <div class="nav">
+          <button class="prev" onclick="prevLesson()">⟨ Previous</button>
+          <button class="next" onclick="nextLesson()">Next ⟩</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div id="indexInfo" style="font-weight:600;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <div class="progress" aria-hidden="true" style="margin-top:14px"><div id="prog"></div></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Full course data: 8 courses × 12 lessons each (detailed Hindi study material) =====
+    const courses = {
+      ai: {
+        title: "Learn AI",
+        lessons: [
+`<h4>पाठ 1: AI — परिभाषा और दायरा</h4>
+<p>Artificial Intelligence (कृत्रिम बुद्धिमत्ता) कंप्यूटर सिस्टम और सॉफ़्टवेयर को ऐसी क्षमताएँ देता है जो पारंपरिक प्रोग्रामिंग से परे हैं — सीखना, reasoning, planning और natural language understanding. AI का दायरा बहुत व्यापक है: Machine Learning, Deep Learning, Natural Language Processing, Computer Vision आदि।</p>
+<p><strong>Example:</strong> Alexa और Google Assistant की क्षमता भाषाई निर्देश समझकर जवाब देना है — यह NLP और AI का practical उदाहरण है।</p>`,
+
+`<h4>पाठ 2: Machine Learning के प्रकार और मूल विचार</h4>
+<p>Machine Learning (ML) में algorithms डेटा से patterns सीखते हैं। मुख्य प्रकार हैं:<br>
+1) Supervised Learning (labeled data) — classification और regression।<br>
+2) Unsupervised Learning (no labels) — clustering, dimensionality reduction।<br>
+3) Reinforcement Learning — agent reward-based सीखता है।</p>
+<p><strong>Note:</strong> supervised learning में training data में input-output pairs होते हैं।</p>`,
+
+`<h4>पाठ 3: Data preprocessing और feature engineering</h4>
+<p>Real-world data अक्सर noisy और inconsistent होता है। Preprocessing में missing values भरना, normalization/scaling, categorical variables की encoding शामिल है। Feature engineering में raw data से meaningful features बनाते हैं जो model की performance बढ़ाते हैं।</p>
+<p><strong>Tip:</strong> बेहतर features अक्सर model choice से ज़्यादा असर डालते हैं।</p>`,
+
+`<h4>पाठ 4: Linear Regression और Model Evaluation</h4>
+<p>Linear Regression continuous targets के लिए एक simple model है। Model evaluate करने के metrics में MSE (Mean Squared Error), RMSE और R² शामिल हैं। Model को overfitting से बचाने के लिए cross-validation और regularization (Ridge/Lasso) प्रयोग किये जाते हैं।</p>
+<p><strong>Example:</strong> घर के दाम predict करने के लिए area, room count जैसे features के साथ linear regression उपयोग कर सकते हैं।</p>`,
+
+`<h4>पाठ 5: Classification algorithms (Logistic Regression, Decision Trees, SVM)</h4>
+<p>Classification में लक्ष्य categorical output होता है। Logistic Regression binary classification के लिए common है; Decision Trees interpretability देते हैं; SVM boundary-based classification करता है। Ensemble methods (Random Forest, Gradient Boosting) अक्सर बेहतर accuracy देते हैं।</p>
+<p><strong>Note:</strong> class imbalance होने पर metrics जैसे precision, recall, F1-score पर ध्यान दें।</p>`,
+
+`<h4>पाठ 6: Neural Networks और Deep Learning का परिचय</h4>
+<p>Neural Networks कई layers से मिलकर बनते हैं — input, hidden और output layers। Deep Learning तब होता है जब network में कई hidden layers हों। यह complex, non-linear relationships सीखता है और images/audio/text जैसी data-types पर बेहतर काम करता है।</p>
+<p><strong>Tip:</strong> छोटे datasets पर simple models बेहतर रहते हैं; large datasets पर ही deep networks प्रभावी होते हैं।</p>`,
+
+`<h4>पाठ 7: Activation Functions और Loss Functions</h4>
+<p>Activation functions (ReLU, Sigmoid, Tanh) non-linearity देते हैं; output layer के लिए suitable activation चुनना जरूरी है (classification → Softmax/Sigmoid)। Loss function (MSE, Cross-Entropy) model optimize करने के लिए उपयोग में आता है और optimizer (SGD, Adam) gradient descent के रूप में parameter update करता है।</p>`,
+
+`<h4>पाठ 8: Convolutional Neural Networks (CNN) — images के लिए</h4>
+<p>CNNs image data में spatial patterns पहचानने के लिए convolutional layers, pooling layers और fully connected layers का उपयोग करते हैं। Feature extraction automatically convolution kernels द्वारा होता है।</p>
+<p><strong>Example:</strong> Image classification (cat/dog) में CNN widely use होती है।</p>`,
+
+`<h4>पाठ 9: Recurrent Neural Networks (RNN) और NLP basics</h4>
+<p>RNNs sequential data (text, time series) के लिए design की जाती हैं। LSTM और GRU जैसे variants long-term dependencies handle करते हैं। NLP में tokenization, word embeddings (Word2Vec, GloVe), और transformer architectures महत्वपूर्ण हैं।</p>`,
+
+`<h4>पाठ 10: Model deployment और production basics</h4>
+<p>Model training के बाद इसे production में deploy करने के लिए model serving (Flask, FastAPI, TensorFlow Serving), versioning, monitoring और latency considerations जरुरी होते हैं। Data drift होने पर model retraining की आवश्यकता होती है।</p>
+<p><strong>Note:</strong> एक simple ML workflow: prototype → train → evaluate → deploy → monitor → retrain।</p>`,
+
+`<h4>पाठ 11: Ethics, bias और responsible AI</h4>
+<p>AI systems में bias और fairness महत्वपूर्ण मुद्दे हैं। Training data biased हो तो model भी biased होगा। Explainability, transparency और privacy (GDPR जैसे नियम) का पालन करना ज़रूरी है।</p>
+<p><strong>Example:</strong> hiring algorithm में biased historical data होने पर discrimination हो सकती है।</p>`,
+
+`<h4>पाठ 12: छोटे projects — practical path</h4>
+<p>Practice के लिए project ideas: 1) Image classifier (cats vs dogs), 2) Sentiment analysis on tweets, 3) Simple chatbot using seq2seq या retrieval based approach। हर project में dataset cleaning, model selection, evaluation और deployment शामिल करें।</p>
+<p><strong>Tip:</strong> छोटे projects से portfolio बनाएं और GitHub पर code host करें।</p>`
+        ]
+      },
+
+      youtube: {
+        title: "YouTube",
+        lessons: [
+`<h4>पाठ 1: YouTube का परिचय और चैनल सेटअप</h4>
+<p>YouTube चैनल बनाने के लिए Google account चाहिए। चैनल का नाम, प्रोफाइल फोटो और चैनल description साफ़ और niche-aware रखें। चैनल art और about section से professional impression बनता है।</p>`,
+
+`<h4>पाठ 2: Niche चुनना और audience define करना</h4>
+<p>Niche चुनते समय competition, interest और monetization potential देखें। Clear audience persona (age, interest, language) बनाएं — इससे content ideas और tone आसान होंगे।</p>`,
+
+`<h4>पाठ 3: Content planning और scripting</h4>
+<p>हर वीडियो के लिए short script बनाएं: hook, body और CTA (subscribe/watch next)। Batch planning से consistency आती है। Use content calendar और topic research tools (Google Trends, YouTube search)।</p>`,
+
+`<h4>पाठ 4: Shooting basics — camera, lighting, audio</h4>
+<p>Good audio और lighting viewers retention बढ़ाते हैं। Softbox या natural light, lapel mic/USB mic और stable framing जरूरी हैं। मोबाइल से भी भी अच्छे results मिलते हैं — ध्यान mic और light पर दें।</p>`,
+
+`<h4>पाठ 5: Editing workflow</h4>
+<p>Editing में pacing, cuts, B-roll, transitions और subtitles जोड़ें। Free tools: DaVinci Resolve, Shotcut; Paid: Adobe Premiere Pro. Keep intros short and remove filler.</p>`,
+
+`<h4>पाठ 6: Thumbnails और Titles</h4>
+<p>Eye-catching thumbnail और clear title CTR बढ़ाते हैं। Face close-up, readable text, and high contrast काम करते हैं। Title में primary keyword early रखें।</p>`,
+
+`<h4>पाठ 7: YouTube SEO</h4>
+<p>Tags, description, chapters और closed captions से discoverability बढ़ती है। First 24–48 hours में engagement critical होता है — encourage comments and shares.</p>`,
+
+`<h4>पाठ 8: Audience retention और analytics</h4>
+<p>YouTube analytics में watch time, audience retention, click-through rate और traffic sources देखें। Retention improve करने के लिए strong hook, quick pacing और mid-video value दें।</p>`,
+
+`<h4>पाठ 9: Monetization strategies</h4>
+<p>AdSense (eligibility: 1k subs + 4k watch hours), affiliates, sponsorships, channel memberships और digital products से revenue बनता है। Diversify income sources।</p>`,
+
+`<h4>पाठ 10: Growth hacks (collabs, playlists, series)</h4>
+<p>Collaborations से new audience मिलती है। Playlists से watch time बढ़ता है। Series content viewers को वापस लाता है—consistent branding रखें।</p>`,
+
+`<h4>पाठ 11: Legal और copyright basics</h4>
+<p>Music और clips का licensed उपयोग करें। Fair use समझें और copyrighted content से बचें। Community guidelines और strike policies जानें।</p>`,
+
+`<h4>पाठ 12: Practical project</h4>
+<p>Start a 10-video series focused on one topic — plan, shoot, edit, publish weekly and track analytics. Iterate based on viewer feedback.</p>`
+        ]
+      },
+
+      instagram: {
+        title: "Instagram",
+        lessons: [
+`<h4>पाठ 1: प्रोफाइल optimization</h4>
+<p>Username आसान और memorable रखें। Bio में value proposition लिखें और contact link/CTA जोड़ें। प्रोफाइल pic brand या face का clear image रखें।</p>`,
+
+`<h4>पाठ 2: Content pillars और theme</h4>
+<p>3–4 content pillars (education, behind-the-scenes, UGC, promotions) तय करें। Visual theme और color palette consistent रखें; यह brand recognition बढ़ाता है।</p>`,
+
+`<h4>पाठ 3: Reels strategy</h4>
+<p>Reels vertical short-form video है; trends और sounds का smart उपयोग reach बढ़ाता है। Hook within first 1–2 seconds रखें। Educational reels में clear steps और captions डालें।</p>`,
+
+`<h4>पाठ 4: Feed posts और carousel</h4>
+<p>Carousel posts educational content दिखाने के लिए बढ़िया हैं। Each slide में concise information और strong CTA रखें।</p>`,
+
+`<h4>पाठ 5: Stories और highlights</h4>
+<p>Daily engagement के लिए stories use करें — polls, Q&A, countdown. Important content को highlights में save करें ताकि new visitors देख सकें।</p>`,
+
+`<h4>पाठ 6: Hashtag और caption strategy</h4>
+<p>Mix of broad और niche hashtags रखें। Caption में first line engaging रखें और CTA दें (comment/share)। Embrace local language for audience connection।</p>`,
+
+`<h4>पाठ 7: Engagement और community building</h4>
+<p>Comments का जवाब दें, DMs handle करें, और UGC promote करें। Micro-influencer collaborations से authentic growth होती है।</p>`,
+
+`<h4>पाठ 8: Analytics और optimization</h4>
+<p>Insights में reach, interactions और saves देखें। High saves indicate valuable content—repeat similar topics and formats.</p>`,
+
+`<h4>पाठ 9: Monetization options</h4>
+<p>Sponsored content, affiliate links, product sales और paid collaborations से earning possible है। Maintain transparency with #ad or disclosure.</p>`,
+
+`<h4>पाठ 10: Brand collaborations और pitch template</h4>
+<p>Brand pitch में audience stats, case studies और collaboration ideas दें। Keep media kit simple and updated.</p>`,
+
+`<h4>पाठ 11: Content repurposing</h4>
+<p>Long video content को छोटे clips, static posts और stories में repurpose करें—effort कम और reach बढ़ती है।</p>`,
+
+`<h4>पाठ 12: Practical project</h4>
+<p>Create 8 Reels in 4 weeks focusing on one topic—track which hook works and double down on best-performing format.</p>`
+        ]
+      },
+
+      facebook: {
+        title: "Facebook",
+        lessons: [
+`<h4>पाठ 1: Page बनाना और optimize करना</h4>
+<p>Business page create करें, About section भरें और call-to-action button सेट करें (Contact, Shop आदि)। Page verification देखें यदि available हो।</p>`,
+
+`<h4>पाठ 2: Content mix और scheduling</h4>
+<p>Text, image, video और link posts का mix रखें। Scheduling tools (Meta Business Suite) से consistent posting आसान होता है।</p>`,
+
+`<h4>पाठ 3: Groups का उपयोग</h4>
+<p>Groups community engagement के लिए बेहतर हैं—rules, moderation और regular interactions से loyal audience बनती है।</p>`,
+
+`<h4>पाठ 4: Facebook Ads basics</h4>
+<p>Campaign objective (Awareness, Traffic, Conversions) चुनें। Audience targeting, budget और creatives का A/B testing जरूरी है।</p>`,
+
+`<h4>पाठ 5: Organic reach बढ़ाने के तरीके</h4>
+<p>Engaging posts, timely replies और community events (live) से organic reach improve होती है। Encourage shares और meaningful comments।</p>`,
+
+`<h4>पाठ 6: Live videos और events</h4>
+<p>Live videos real-time engagement बढ़ाते हैं। Events बनाने से sign-ups और reminders मिलते हैं—follow-up messages से conversions बढ़ें।</p>`,
+
+`<h4>पाठ 7: Messaging और automation</h4>
+<p>Facebook Page में automated responses, saved replies और Messenger bots से customer support efficient बनता है।</p>`,
+
+`<h4>पाठ 8: Page insights समझना</h4>
+<p>Post reach, engagement और page likes trends देखें। Best performing posts की strategy replicate करें।</p>`,
+
+`<h4>पाठ 9: Monetization on Facebook</h4>
+<p>Ad breaks, fan subscriptions, branded content और in-stream ads से monetization possible है—eligibility check करें।</p>`,
+
+`<h4>पाठ 10: Crisis management और moderation</h4>
+<p>Negative comments या spam पर calm और policy-based response दें। Clear community guidelines और moderators रखें।</p>`,
+
+`<h4>पाठ 11: Integrations (Shop, Catalog)</h4>
+<p>Products catalog और shop integrate करके direct sales enable करें—proper product descriptions और images चाहिए।</p>`,
+
+`<h4>पाठ 12: Practical project</h4>
+<p>Create a week-long campaign: 3 posts + 1 live + 1 ad. Measure results and optimize for next week.</p>`
+        ]
+      },
+
+      twitter: {
+        title: "Twitter (X)",
+        lessons: [
+`<h4>पाठ 1: Profile और bio optimization</h4>
+<p>Short bio में expertise और CTA रखें। Use branded handle और pinned tweet से best content highlight करें।</p>`,
+
+`<h4>पाठ 2: Short-form content strategy</h4>
+<p>Clear, concise और high-value tweets लिखें। Threads long-form thoughts के लिए उपयोगी हैं—thread में step-by-step value दें।</p>`,
+
+`<h4>पाठ 3: Trends और hashtags</h4>
+<p>Trending hashtags timely use करें पर relevance रखें। Tweet visibility के लिए 1–2 relevant hashtags बेहतर हैं।</p>`,
+
+`<h4>पाठ 4: Media use (images, GIFs, videos)</h4>
+<p>Media tweets अधिक engagement देते हैं—optimized image sizes और subtitles on videos जरूरी हैं।</p>`,
+
+`<h4>पाठ 5: Engagement tactics</h4>
+<p>Replies, quote tweets और meaningful threads से community बनती है। Timely replies और DMs handle करें।</p>`,
+
+`<h4>पाठ 6: Tweet scheduling और frequency</h4>
+<p>Multiple tweets per day fine—peak hours test करें। Scheduling tools से consistent presence बना रहता है।</p>`,
+
+`<h4>पाठ 7: Analytics और growth signals</h4>
+<p>Impressions, engagements और profile visits track करें। High engagement tweets का pattern समझ कर replicate करें।</p>`,
+
+`<h4>पाठ 8: Safety और policy</h4>
+<p>Abusive behaviour से बचें, copyright rules follow करें और misinformation avoid करें।</p>`,
+
+`<h4>पाठ 9: Monetization options</h4>
+<p>Sponsored tweets, affiliate links और creator programs से monetization हो सकती है। Always disclose ads.</p>`,
+
+`<h4>पाठ 10: Community building</h4>
+<p>Lists, Spaces और Twitter communities से focussed audience engage कर सकते हैं।</p>`,
+
+`<h4>पाठ 11: Using threads for teaching</h4>
+<p>Step-by-step educational threads बनाकर audience attract करें—each tweet में clear point और link/CTA रखें।</p>`,
+
+`<h4>पाठ 12: Practical project</h4>
+<p>Create a 7-day thread series on one topic—promote via pinned tweet and track engagement.</p>`
+        ]
+      },
+
+      linkedin: {
+        title: "LinkedIn",
+        lessons: [
+`<h4>पाठ 1: Professional profile optimization</h4>
+<p>Profile pic, headline और summary impactful बनाएं। Summary में accomplishments और value proposition लिखें।</p>`,
+
+`<h4>पाठ 2: Networking etiquette</h4>
+<p>Personalized connection requests भेजें, meaningful messages भेजें और follow-up करें। Quality connections important हैं।</p>`,
+
+`<h4>पाठ 3: Content types on LinkedIn</h4>
+<p>Articles, short posts, slides (document uploads) और videos different audiences को serve करते हैं—educational content well-received होता है।</p>`,
+
+`<h4>पाठ 4: Building authority</h4>
+<p>Regular insights, case studies और long-form articles से subject-matter expertise दिखाएँ।</p>`,
+
+`<h4>पाठ 5: Job search और recruiting</h4>
+<p>Jobs section, saved searches और alerts set करें। For recruiters, optimized job posts yield better candidates।</p>`,
+
+`<h4>पाठ 6: Company pages और employer branding</h4>
+<p>Company page पर culture, openings और milestones share करें। Employees ko encourage करें content share करने के लिए।</p>`,
+
+`<h4>पाठ 7: Groups और discussions</h4>
+<p>Industry groups join करें और value add करने वाला participation करें—यह visibility बढ़ाने का तरीका है।</p>`,
+
+`<h4>पाठ 8: Lead generation और outreach</h4>
+<p>Content-driven outreach और personalized messaging से warm leads मिलता है—cold pitches avoid करें।</p>`,
+
+`<h4>पाठ 9: LinkedIn learning और skill endorsements</h4>
+<p>Courses complete कर के certifications add करें; endorsements और recommendations credibility बढ़ाते हैं।</p>`,
+
+`<h4>पाठ 10: Analytics और content strategy</h4>
+<p>Post analytics से समझें किस content से profile views और engagement बढ़ रहा है—best timing और formats पहचानें।</p>`,
+
+`<h4>पाठ 11: Personal branding project</h4>
+<p>Create a 4-week content plan: 2 insight posts, 1 article, 1 video per week—measure profile views and connections growth.</p>`,
+
+`<h4>पाठ 12: Monetization (consulting, leads)</h4>
+<p>LinkedIn पर consultancy, speaking gigs और B2B leads generate कर के monetization कर सकते हैं—clear offerings और testimonials दिखाएँ।</p>`
+        ]
+      },
+
+      whatsapp: {
+        title: "WhatsApp",
+        lessons: [
+`<h4>पाठ 1: WhatsApp vs WhatsApp Business</h4>
+<p>WhatsApp Business में business profile, catalog, quick replies होते हैं। Business users के लिए यह कितना उपयोगी है—customer support के लिए built-in tools उपलब्ध हैं।</p>`,
+
+`<h4>पाठ 2: Business profile और catalog setup</h4>
+<p>Business profile में address, description और timings डालें। Catalog में products add कर के users को direct showcase करें।</p>`,
+
+`<h4>पाठ 3: Broadcast lists और groups का अंतर</h4>
+<p>Broadcast one-to-many messages के लिए, Groups community interaction के लिए। Broadcast recipients को message तब मिलती है जब वे आपके contact में हों।</p>`,
+
+`<h4>पाठ 4: Quick replies और labels</h4>
+<p>Frequently asked questions के लिए quick replies set करें और chat labels से conversation organize रखें।</p>`,
+
+`<h4>पाठ 5: Automation basics और integrations</h4>
+<p>WhatsApp Business API से CRM और automation integrate की जा सकती है—order confirmations और notifications automate किए जा सकते हैं।</p>`,
+
+`<h4>पाठ 6: Privacy और consent</h4>
+<p>User consent ले कर marketing messages भेजें। Spamming से user loss और legal issues हो सकते हैं।</p>`,
+
+`<h4>पाठ 7: Customer service best practices</h4>
+<p>Fast response, polite tone, और clear next steps दें। Templates use करें पर personalization रखें।</p>`,
+
+`<h4>पाठ 8: Payment और commerce features</h4>
+<p>कुछ markets में in-chat payments उपलब्ध हैं। Catalog और links से ordering flow आसान किया जा सकता है।</p>`,
+
+`<h4>पाठ 9: Metrics and response rate</h4>
+<p>Response time और read rates monitor करें—fast replies increase trust and conversions।</p>`,
+
+`<h4>पाठ 10: Use-cases examples</h4>
+<p>Use-cases: appointment reminders, order updates, customer support, group coaching. हर use-case के लिए message templates design करें।</p>`,
+
+`<h4>पाठ 11: Security and backups</h4>
+<p>Chats का backup enable रखें और device access secure रखें। Sensitive info share करने से पहले double-check करें।</p>`,
+
+`<h4>पाठ 12: Practical project</h4>
+<p>Set up a WhatsApp Business profile, create a small product catalog and run a 1-week broadcast campaign to interested customers—track responses and orders.</p>`
+        ]
+      },
+
+      telegram: {
+        title: "Telegram",
+        lessons: [
+`<h4>पाठ 1: Telegram का overview</h4>
+<p>Telegram एक fast, secure messaging platform है जिसमें channels (one-to-many) और groups (many-to-many) उपलब्ध हैं। Bots powerful automation के लिए use होते हैं।</p>`,
+
+`<h4>पाठ 2: Channels बनाम groups</h4>
+<p>Channels broadcast करने के लिए हैं जबकि groups interaction और discussion के लिए। Channels वोट/analytics दिखाते हैं और large audience तक broadcast करते हैं।</p>`,
+
+`<h4>पाठ 3: Channel setup और optimization</h4>
+<p>Channel name, description और pinned messages से users को value दिखाएँ। Consistent posting schedule बनाएँ और important posts pin करें।</p>`,
+
+`<h4>पाठ 4: Group management और moderation</h4>
+<p>Moderators assign करें, clear rules रखें और spam filters use करें। Welcome messages और pinned rules से community healthy रहती है।</p>`,
+
+`<h4>पाठ 5: Bots basics और automation</h4>
+<p>Bots user onboarding, notifications और simple workflows automate कर सकते हैं। Bot creation के लिए BotFather उपयोग करें और simple webhook-based logic implement करें।</p>`,
+
+`<h4>पाठ 6: Posting strategies और multimedia</h4>
+<p>Images, documents, polls और voice messages से engagement बढ़ाएं। Short, regular posts audience को engaged रखते हैं।</p>`,
+
+`<h4>पाठ 7: Monetization और premium features</h4>
+<p>Channel subscriptions, sponsored posts और paid bots monetization के रास्ते हैं। High-value exclusive content से subscriptions चलाई जा सकती हैं।</p>`,
+
+`<h4>पाठ 8: Analytics और reach</h4>
+<p>Views per post और forwarded counts से reach measure करें। Best posting times और formats identify करें।</p>`,
+
+`<h4>पाठ 9: Security और privacy settings</h4>
+<p>Admin permissions restrict करें, two-step verification enable रखें और sensitive info share न करें।</p>`,
+
+`<h4>पाठ 10: Growth tactics</h4>
+<p>Cross-promotion, collaborations और public groups में activity से channel grow करें। Use invite links और social sharing।</p>`,
+
+`<h4>पाठ 11: Use-case project</h4>
+<p>Start a Telegram channel for weekly educational content—publish 3 posts per week + one poll and measure growth over a month.</p>`,
+
+`<h4>पाठ 12: Advanced: integrating bots with services</h4>
+<p>Use bots to integrate RSS feeds, payment links और notifications. Webhooks और simple server scripts (or no-code bot services) से automation set कर सकते हैं।</p>`
+        ]
+      }
+    };
+
+    // ===== UI logic =====
+    const params = new URLSearchParams(location.search);
+    const courseId = params.get('course') || 'ai';
+    const course = courses[courseId];
+
+    let idx = 0;
+    const titleEl = document.getElementById('courseTitle');
+    const lessonTitle = document.getElementById('lessonTitle');
+    const lessonBody = document.getElementById('lessonBody');
+    const indexInfo = document.getElementById('indexInfo');
+    const prog = document.getElementById('prog');
+
+    if(!course){
+      titleEl.innerText = 'Invalid Course';
+      lessonTitle.innerText = '';
+      lessonBody.innerHTML = '<p>Course nahi mila. Home par jaakar correct course choose karein.</p>';
+    } else {
+      titleEl.innerText = course.title;
+      render();
+    }
+
+    function render(){
+      const raw = course.lessons[idx];
+      // set lesson number and content — raw contains HTML string
+      lessonTitle.innerHTML = `Lesson ${idx+1} / ${course.lessons.length}`;
+      lessonBody.innerHTML = raw;
+      indexInfo.innerText = course.title;
+      const percent = Math.round(((idx+1)/course.lessons.length) * 100);
+      prog.style.width = percent + '%';
+    }
+
+    function nextLesson(){
+      if(idx < course.lessons.length - 1){ idx++; render(); }
+      else { alert('कोर्स पूरा हो गया ✅'); }
+    }
+
+    function prevLesson(){
+      if(idx > 0){ idx--; render(); }
+    }
+
+    function goHome(){ location.href = 'index.html'; }
+  </script>
+</body>
+</html>
